@@ -1,7 +1,12 @@
 from fastapi import APIRouter, UploadFile, File
 from app.schemas.response import VerificationResponse
+from app.services.text_service import TextVerificationService
 
 router = APIRouter(prefix="/verify", tags=["Verification"])
+
+# Initialize service once (model loads once)
+text_service = TextVerificationService()
+
 
 @router.post("/image", response_model=VerificationResponse)
 async def verify_image(file: UploadFile = File(...)):
@@ -15,14 +20,12 @@ async def verify_image(file: UploadFile = File(...)):
         }
     }
 
+
 @router.post("/text", response_model=VerificationResponse)
 async def verify_text(text: str):
+    result = text_service.verify(text)
+
     return {
         "input_type": "text",
-        "authenticity_score": 0.73,
-        "verdict": "likely_real",
-        "confidence": 0.71,
-        "details": {
-            "note": "Stub response – NLP model coming soon"
-        }
+        **result
     }

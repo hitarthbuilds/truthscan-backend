@@ -4,3 +4,5 @@ pydantic
 python-multipart
 Pillow
 numpy
+transformers
+torch
