@@ -4,6 +4,8 @@ from app.services.text_service import TextVerificationService
 from app.services.plausibility_service import PlausibilityService
 from app.services.explainability_service import ExplainabilityService
 from app.services.risk_service import RiskScoringService
+from app.services.image_service import ImageVerificationService
+
 
 
 router = APIRouter(prefix="/verify", tags=["Verification"])
@@ -14,20 +16,26 @@ plausibility_service = PlausibilityService()
 explainability_service = ExplainabilityService()
 risk_service = RiskScoringService()
 
+image_service = ImageVerificationService()
 
 
 
 @router.post("/image", response_model=VerificationResponse)
 async def verify_image(file: UploadFile = File(...)):
+    file_bytes = await file.read()
+    image_result = image_service.verify(file_bytes)
+
+    risk = risk_service.score(
+        linguistic_confidence=image_result["confidence"],
+        flags=image_result["details"]["image_flags"]
+    )
+
     return {
         "input_type": "image",
-        "authenticity_score": 0.42,
-        "verdict": "suspicious",
-        "confidence": 0.65,
-        "details": {
-            "note": "Stub response – image model coming soon"
-        }
+        **image_result,
+        **risk
     }
+
 
 
 @router.post("/text", response_model=VerificationResponse)
