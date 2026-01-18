@@ -12,17 +12,27 @@ class ExplainabilityService:
             ),
             "absolute_claim": (
                 "The claim uses absolute language that leaves no room for uncertainty."
-            )
+            ),
+            "missing_metadata": (
+                "The image lacks standard metadata, which can indicate resaving or manipulation."
+            ),
+            "screenshot_like": (
+                "The image dimensions resemble common screen capture ratios."
+            ),
+            "compression_artifacts": (
+                "The image format or compression suggests possible re-encoding or reposting."
+            ),
         }
 
     def explain(self, flags: List[str]) -> List[str]:
         explanations = []
 
         for flag in flags:
-            explanation = self.flag_explanations.get(
-                flag,
-                "This aspect of the claim requires further verification."
+            explanations.append(
+                self.flag_explanations.get(
+                    flag,
+                    "This aspect of the content requires further verification."
+                )
             )
-            explanations.append(explanation)
 
         return explanations

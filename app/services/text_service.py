@@ -1,31 +1,36 @@
 from transformers import pipeline
+from typing import Optional
 
 
 class TextVerificationService:
     def __init__(self):
-        # Lightweight linguistic analysis model (NOT a truth model)
-        self.classifier = pipeline(
-            "text-classification",
-            model="distilbert-base-uncased-finetuned-sst-2-english"
-        )
+        self._classifier: Optional[callable] = None
+
+    def _load_model(self):
+        if self._classifier is None:
+            self._classifier = pipeline(
+                "text-classification",
+                model="distilbert-base-uncased-finetuned-sst-2-english"
+            )
 
     def verify(self, text: str):
-        result = self.classifier(text)[0]
+        self._load_model()  # loads once, reused forever
+
+        result = self._classifier(text)[0]
 
         label = result["label"]
         score = float(result["score"])
 
-        # Interpret results honestly
         if score >= 0.85:
-            if label == "POSITIVE":
-                verdict = "neutral_claim"
-            else:
-                verdict = "emotionally_loaded_claim"
+            verdict = (
+                "neutral_claim"
+                if label == "POSITIVE"
+                else "emotionally_loaded_claim"
+            )
         else:
             verdict = "low_confidence_claim"
 
         return {
-            # This is NOT factual truth — it's linguistic confidence
             "authenticity_score": round(score, 3),
             "verdict": verdict,
             "confidence": round(score, 3),

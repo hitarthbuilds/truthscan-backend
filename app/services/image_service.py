@@ -23,22 +23,20 @@ class ImageVerificationService:
         width, height = image.size
         aspect_ratio = round(width / height, 2)
 
-        common_screen_ratios = {
+        common_ratios = {
             16 / 9,
             9 / 16,
             4 / 3,
-            3 / 4
+            3 / 4,
         }
 
-        return any(abs(aspect_ratio - r) < 0.05 for r in common_screen_ratios)
+        return any(abs(aspect_ratio - r) < 0.05 for r in common_ratios)
 
     def _compression_artifact_check(self, image: Image.Image) -> bool:
-        # Heuristic: screenshots / reshares tend to be PNG or low-quality JPEG
         return image.format in {"PNG", "WEBP"}
 
     def verify(self, file_bytes: bytes) -> Dict:
         image = Image.open(io.BytesIO(file_bytes))
-
         flags: List[str] = []
 
         exif = self._extract_exif(image)
@@ -53,20 +51,13 @@ class ImageVerificationService:
 
         confidence = max(0.0, 1.0 - (0.2 * len(flags)))
 
-        verdict = (
-            "review_required"
-            if flags
-            else "likely_real"
-        )
-
         return {
             "authenticity_score": round(confidence, 3),
             "confidence": round(confidence, 3),
-            "verdict": verdict,
             "details": {
                 "exif_present": bool(exif),
                 "exif_keys": list(exif.keys()),
                 "image_flags": flags,
-                "image_flag_count": len(flags)
-            }
+                "image_flag_count": len(flags),
+            },
         }

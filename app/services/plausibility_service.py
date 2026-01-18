@@ -4,31 +4,29 @@ from typing import List, Dict
 
 class PlausibilityService:
     def __init__(self):
-        # Simple keyword-based heuristics (fast + explainable)
         self.temporal_triggers = [
             r"\btomorrow\b",
             r"\binstantly\b",
             r"\bwithin (minutes|hours)\b",
-            r"\bby tonight\b"
+            r"\bby tonight\b",
         ]
 
         self.physical_impossibilities = [
             r"\bsun will explode\b",
             r"\bgravity (stopped|turned off)\b",
             r"\bperpetual motion\b",
-            r"\bviolates the laws of physics\b"
+            r"\bviolates the laws of physics\b",
         ]
 
         self.absolute_claims = [
             r"\balways\b",
             r"\bnever\b",
             r"\bguaranteed\b",
-            r"\b100%\b"
+            r"\b100%\b",
         ]
 
     def check(self, text: str) -> Dict:
         flags: List[str] = []
-
         lowered = text.lower()
 
         for pattern in self.temporal_triggers:
@@ -45,5 +43,5 @@ class PlausibilityService:
 
         return {
             "flags": flags,
-            "flag_count": len(flags)
+            "flag_count": len(flags),
         }
