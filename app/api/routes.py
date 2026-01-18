@@ -3,6 +3,7 @@ from app.schemas.response import VerificationResponse
 from app.services.text_service import TextVerificationService
 from app.services.plausibility_service import PlausibilityService
 from app.services.explainability_service import ExplainabilityService
+from app.services.risk_service import RiskScoringService
 
 
 router = APIRouter(prefix="/verify", tags=["Verification"])
@@ -11,6 +12,8 @@ router = APIRouter(prefix="/verify", tags=["Verification"])
 text_service = TextVerificationService()
 plausibility_service = PlausibilityService()
 explainability_service = ExplainabilityService()
+risk_service = RiskScoringService()
+
 
 
 
@@ -35,9 +38,15 @@ async def verify_text(text: str):
         plausibility_result["flags"]
     )
 
+    risk = risk_service.score(
+        linguistic_confidence=linguistic_result["confidence"],
+        flags=plausibility_result["flags"]
+    )
+
     return {
         "input_type": "text",
         **linguistic_result,
+        **risk,
         "details": {
             **linguistic_result["details"],
             "plausibility_flags": plausibility_result["flags"],
