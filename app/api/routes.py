@@ -5,7 +5,8 @@ from app.services.plausibility_service import PlausibilityService
 from app.services.explainability_service import ExplainabilityService
 from app.services.risk_service import RiskScoringService
 from app.services.image_service import ImageVerificationService
-
+from typing import Optional
+from app.schemas.batch import BatchVerificationResponse
 
 
 router = APIRouter(prefix="/verify", tags=["Verification"])
@@ -61,4 +62,56 @@ async def verify_text(text: str):
             "plausibility_flag_count": plausibility_result["flag_count"],
             "explanations": explanations
         }
+    }
+
+
+@router.post("/batch", response_model=BatchVerificationResponse)
+async def verify_batch(
+    text: Optional[str] = None,
+    image: Optional[UploadFile] = File(None)
+):
+    text_result = None
+    image_result = None
+    risks = []
+
+    if text:
+        linguistic = text_service.verify(text)
+        plausibility = plausibility_service.check(text)
+        explanations = explainability_service.explain(plausibility["flags"])
+
+        text_risk = risk_service.score(
+            linguistic_confidence=linguistic["confidence"],
+            flags=plausibility["flags"]
+        )
+
+        text_result = {
+            **linguistic,
+            **text_risk,
+            "details": {
+                **linguistic["details"],
+                "plausibility_flags": plausibility["flags"],
+                "explanations": explanations
+            }
+        }
+
+        risks.append(text_risk["risk_score"])
+
+    if image:
+        image_result = await verify_image(image)
+        risks.append(image_result["risk_score"])
+
+    combined_risk = round(sum(risks) / len(risks), 3) if risks else 0.0
+
+    if combined_risk >= 0.75:
+        level = "high"
+    elif combined_risk >= 0.4:
+        level = "medium"
+    else:
+        level = "low"
+
+    return {
+        "text_result": text_result,
+        "image_result": image_result,
+        "combined_risk_score": combined_risk,
+        "combined_risk_level": level
     }
