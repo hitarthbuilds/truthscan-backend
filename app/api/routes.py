@@ -2,12 +2,15 @@ from fastapi import APIRouter, UploadFile, File
 from app.schemas.response import VerificationResponse
 from app.services.text_service import TextVerificationService
 from app.services.plausibility_service import PlausibilityService
+from app.services.explainability_service import ExplainabilityService
+
 
 router = APIRouter(prefix="/verify", tags=["Verification"])
 
 # Initialize service once (model loads once)
 text_service = TextVerificationService()
 plausibility_service = PlausibilityService()
+explainability_service = ExplainabilityService()
 
 
 
@@ -28,6 +31,9 @@ async def verify_image(file: UploadFile = File(...)):
 async def verify_text(text: str):
     linguistic_result = text_service.verify(text)
     plausibility_result = plausibility_service.check(text)
+    explanations = explainability_service.explain(
+        plausibility_result["flags"]
+    )
 
     return {
         "input_type": "text",
@@ -35,7 +41,7 @@ async def verify_text(text: str):
         "details": {
             **linguistic_result["details"],
             "plausibility_flags": plausibility_result["flags"],
-            "plausibility_flag_count": plausibility_result["flag_count"]
+            "plausibility_flag_count": plausibility_result["flag_count"],
+            "explanations": explanations
         }
     }
-
