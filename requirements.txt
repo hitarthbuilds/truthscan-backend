@@ -5,5 +5,3 @@ python-multipart
 slowapi
 requests
 Pillow
-transformers
-torch
