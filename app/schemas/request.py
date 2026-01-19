@@ -31,3 +31,9 @@ class BatchVerificationRequest(BaseModel):
         False,
         description="Whether an image is included in the batch request"
     )
+
+
+from pydantic import BaseModel
+
+class TextVerificationRequest(BaseModel):
+    text: str
