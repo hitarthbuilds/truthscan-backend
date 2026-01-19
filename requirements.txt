@@ -4,5 +4,6 @@ pydantic
 python-multipart
 slowapi
 requests
+Pillow
 transformers
-Pillow 
+torch
