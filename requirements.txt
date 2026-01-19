@@ -4,4 +4,4 @@ pydantic
 python-multipart
 slowapi
 requests
-transoformers
+transformers
