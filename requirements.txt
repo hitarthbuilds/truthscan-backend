@@ -5,4 +5,4 @@ python-multipart
 slowapi
 requests
 transformers
-pillow 
+Pillow 
