@@ -1,0 +1,16 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+venv
+node_modules
+tests
+docs
+*.jpg
+*.png
+*.mp4
+.cache

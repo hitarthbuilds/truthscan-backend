@@ -1,8 +1,6 @@
 fastapi
-uvicorn[standard]
+uvicorn
 pydantic
 python-multipart
-Pillow
-numpy
-transformers
-torch
+slowapi
+requests
